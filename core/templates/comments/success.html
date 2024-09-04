@@ -1,0 +1,11 @@
+<!-- comments/templates/comments/success.html -->
+{% extends 'comments/base.html' %}
+
+{% block content %}
+<div class="alert alert-success" role="alert">
+    <h4 class="alert-heading">Success!</h4>
+    <p>Your automated replies have been posted to the selected video.</p>
+    <hr>
+    <a href="{% url 'home' %}" class="btn btn-primary">Go Back Home</a>
+</div>
+{% endblock %}

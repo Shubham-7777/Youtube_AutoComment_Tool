@@ -1,0 +1,20 @@
+<!-- comments/templates/comments/select_channel.html -->
+{% extends 'comments/base.html' %}
+
+{% block content %}
+<h2>Select a YouTube Channel</h2>
+<form method="post" action="{% url 'select_video' %}">
+    {% csrf_token %}
+    <div class="form-group">
+        {% for channel in channels %}
+            <div class="form-check">
+                <input class="form-check-input" type="radio" name="channel_id" id="channel{{ forloop.counter }}" value="{{ channel.id }}" required>
+                <label class="form-check-label" for="channel{{ forloop.counter }}">
+                    {{ channel.snippet.title }}
+                </label>
+            </div>
+        {% endfor %}
+    </div>
+    <button type="submit" class="btn btn-success">Next</button>
+</form>
+{% endblock %}

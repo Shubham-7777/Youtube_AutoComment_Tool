@@ -1,0 +1,14 @@
+<!-- comments/templates/comments/home.html -->
+{% extends 'comments/base.html' %}
+
+{% block content %}
+<div class="jumbotron text-center">
+    <h1 class="display-4">YouTube Videos AutoComment with OpenAI</h1>
+    <p class="lead">Automate responses to your YouTube comments using OpenAI.</p>
+    {% if user.is_authenticated %}
+        <a href="{% url 'google_oauth' %}" class="btn btn-primary btn-lg">Connect YouTube Channel</a>
+    {% else %}
+        <a href="{% url 'login' %}" class="btn btn-primary btn-lg">Login with Google</a>
+    {% endif %}
+</div>
+{% endblock %}
