@@ -11,7 +11,7 @@ https://docs.djangoproject.com/en/5.1/ref/settings/
 """
 import os
 from pathlib import Path
-
+os.environ['OAUTHLIB_INSECURE_TRANSPORT'] = '1'
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 #BASE_DIR = Path(__file__).resolve().parent.parent
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
@@ -40,7 +40,7 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'rest_framework',
     'django_extensions',
-
+    'sslserver',
     #custom apps
     'core',
 
@@ -150,3 +150,5 @@ STATICFILES_DIRS = [
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
+GOOGLE_OAUTH2_CLIENT_SECRETS_JSON = 'client_secret.json'
+GOOGLE_OAUTH2_SCOPES = ['https://www.googleapis.com/auth/youtube.force-ssl']

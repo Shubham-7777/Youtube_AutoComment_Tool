@@ -39,9 +39,36 @@ def google_oauth(request):
     request.session['state'] = state
     return redirect(authorization_url)
 
+"""
+@csrf_exempt
+def oauth2callback(request):
+    print(request.build_absolute_uri(), "OAuth Callback URL")  # Log the callback URL
+    state = request.session.get('state')
+    print(state, "OAuth State")  # Log the state
+
+    flow = Flow.from_client_secrets_file(
+        settings.GOOGLE_OAUTH2_CLIENT_SECRETS_JSON,
+        scopes=settings.GOOGLE_OAUTH2_SCOPES,
+        state=state,
+        redirect_uri=request.build_absolute_uri(reverse('oauth2callback'))
+    )
+
+    try:
+        flow.fetch_token(authorization_response=request.build_absolute_uri())
+        credentials = flow.credentials
+        request.session['credentials'] = credentials_to_dict(credentials)
+    except Exception as e:
+        print(f"Error during token fetch: {e}")  # Log any error
+        return redirect('error_page')  # Add an error page or message here
+
+    return redirect('select_channel')
+"""
+
 # OAuth2 callback
 @csrf_exempt
 def oauth2callback(request):
+
+    
     print(request, "request 66")
     state = request.session['state']
     flow = Flow.from_client_secrets_file(
