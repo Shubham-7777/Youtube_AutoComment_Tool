@@ -11,4 +11,6 @@ urlpatterns = [
     path('gather_insights/', views.gather_insights, name='gather_insights'),
     path('process_comments/', views.process_comments, name='process_comments'),
     path('success/', views.success, name='success'),
+    path('view_negative_comments/', views.view_negative_comments, name='view_negative_comments'), 
+
 ]

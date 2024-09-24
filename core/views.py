@@ -22,6 +22,19 @@ def home(request):
 
 # Initiate OAuth flow
 
+def home(request):
+    """
+    This function renders the home page of the web application.
+
+    Parameters:
+    request (HttpRequest): The request object containing information about the client's request.
+
+    Returns:
+    HttpResponse: The rendered home page as an HttpResponse object.
+    """
+    return render(request, 'comments/home.html')
+
+
 
 def google_oauth(request):
     flow = Flow.from_client_secrets_file(
@@ -141,6 +154,27 @@ def gather_insights(request):
 
     return redirect('select_video')
 
+
+def analyze_sentiment(comment_text):
+    openai.api_key = os.getenv('OPENAI_API_KEY')
+
+    prompt = f"Determine the type/sentiment/tone/mood of this YouTube comment: \"{comment_text}\". Respond with 'positive', 'neutral', or 'negative'."
+    
+    try:
+        sentiment_response = openai.ChatCompletion.create(
+            model="gpt-3.5-turbo",
+            messages=[
+                {"role": "system", "content": "You are a sentiment analysis assistant."},
+                {"role": "user", "content": prompt}
+            ],
+            max_tokens=10
+        )
+        sentiment = sentiment_response.choices[0].message['content'].strip().lower()
+        return sentiment
+    except Exception as e:
+        print(f"Error during sentiment analysis: {e}")
+        return 'neutral'  # Default to neutral if analysis fails
+
 # Process Comments and Generate Replies
 def process_comments(request):
     if request.method == 'POST':
@@ -221,3 +255,42 @@ def process_comments(request):
 # Success Page
 def success(request):
     return render(request, 'comments/success.html')
+
+
+
+def view_negative_comments(request):
+    video_id = request.session.get('selected_video_id')
+    credentials_dict = request.session.get('credentials')
+
+    if not video_id or not credentials_dict:
+        return redirect('home')
+
+    credentials = Credentials(**credentials_dict)
+    youtube = build('youtube', 'v3', credentials=credentials)
+
+    # Fetch comments
+    response = youtube.commentThreads().list(
+        videoId=video_id,
+        part='snippet',
+        maxResults=100,
+        textFormat='plainText'
+    ).execute()
+
+    comments = response.get('items', [])
+    negative_comments = []
+    positive_comments = []
+    negative_comments = []
+
+    # Iterate through comments and analyze sentiment
+    for comment in comments:
+        top_comment = comment['snippet']['topLevelComment']
+        comment_text = top_comment['snippet']['textOriginal']
+
+        # Analyze sentiment of the comment
+        sentiment = analyze_sentiment(comment_text)
+
+        if sentiment == 'negative':
+            # Store negative comments for display
+            negative_comments.append(comment_text)
+
+    return render(request, 'comments/view_negative_comments.html', {'negative_comments': negative_comments})

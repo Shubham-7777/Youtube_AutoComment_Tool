@@ -1,0 +1,19 @@
+<!-- comments/templates/comments/view_negative_comments.html -->
+{% extends 'comments/base.html' %}
+
+{% block content %}
+<h2>Negative Comments</h2>
+
+{% if negative_comments %}
+    <ul>
+        {% for comment in negative_comments %}
+            <li>{{ comment }}</li>
+        {% endfor %}
+    </ul>
+    <p>Please review and reply manually to these comments.</p>
+{% else %}
+    <p>No negative comments found.</p>
+{% endif %}
+
+<a href="{% url 'gather_insights' %}">Back to Insights</a>
+{% endblock %}
