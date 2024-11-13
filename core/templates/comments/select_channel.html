@@ -1,20 +1,38 @@
-<!-- comments/templates/comments/select_channel.html -->
 {% extends 'comments/base.html' %}
 
 {% block content %}
-<h2>Select a YouTube Channel</h2>
-<form method="post" action="{% url 'select_video' %}">
-    {% csrf_token %}
-    <div class="form-group">
-        {% for channel in channels %}
-            <div class="form-check">
-                <input class="form-check-input" type="radio" name="channel_id" id="channel{{ forloop.counter }}" value="{{ channel.id }}" required>
-                <label class="form-check-label" for="channel{{ forloop.counter }}">
-                    {{ channel.snippet.title }}
-                </label>
+<div class="container mt-5">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="text-center mb-4">
+                <h2 class="display-4">Select Your YouTube Channel</h2>
+                <p class="lead">Choose the channel you want to manage.</p>
             </div>
-        {% endfor %}
+
+            <form method="post" action="{% url 'select_video' %}">
+                {% csrf_token %}
+                <div class="form-group">
+                    <div class="list-group">
+                        {% for channel in channels %}
+                        <div class="list-group-item list-group-item-action">
+                            <input class="form-check-input d-none" type="radio" name="channel_id" id="channel{{ forloop.counter }}" value="{{ channel.id }}" required>
+                            <label class="d-flex align-items-center" for="channel{{ forloop.counter }}">
+                                <!-- Channel thumbnail -->
+                                <img src="{{ channel.snippet.thumbnails.default.url }}" alt="{{ channel.snippet.title }}" class="rounded-circle mr-3" width="50" height="50">
+                                <span class="font-weight-bold">{{ channel.snippet.title }}</span>
+                            </label>
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+
+                <div class="text-center mt-4">
+                    <button type="submit" class="btn btn-primary btn-lg">
+                        <i class="fas fa-chevron-right"></i> Next
+                    </button>
+                </div>
+            </form>
+        </div>
     </div>
-    <button type="submit" class="btn btn-success">Next</button>
-</form>
+</div>
 {% endblock %}

@@ -1,14 +1,74 @@
-<!-- comments/templates/comments/home.html -->
 {% extends 'comments/base.html' %}
 
 {% block content %}
-<div class="jumbotron text-center">
-    <h1 class="display-4">YouTube Videos AutoComment with OpenAI</h1>
-    <p class="lead">Automate responses to your YouTube comments using OpenAI.</p>
-    {% if user.is_authenticated %}
-        <a href="{% url 'google_oauth' %}" class="btn btn-primary btn-lg">Connect YouTube Channel</a>
-    {% else %}
-        <a href="{% url 'login' %}" class="btn btn-primary btn-lg">Login with Google</a>
-    {% endif %}
-</div>
+<!-- Navbar Section -->
+<nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+    <div class="container">
+        <a class="navbar-brand" href="#">
+            <img src="https://upload.wikimedia.org/wikipedia/commons/b/b8/YouTube_Logo_2017.svg" alt="YouTube Logo" width="120">
+        </a>
+        <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+        <div class="collapse navbar-collapse" id="navbarNav">
+            <ul class="navbar-nav ml-auto">
+                {% if user.is_authenticated %}
+                    <li class="nav-item">
+                        <a href="{% url 'google_oauth' %}" class="nav-link">Connect YouTube Channel</a>
+                    </li>
+                    <li class="nav-item">
+                        <a href="{% url 'logout' %}" class="nav-link">Logout</a>
+                    </li>
+                {% else %}
+                    <li class="nav-item">
+                        <a href="{% url 'login' %}" class="nav-link">Login with Google</a>
+                    </li>
+                {% endif %}
+            </ul>
+        </div>
+    </div>
+</nav>
+
+<!-- Hero Section -->
+<section class="hero bg-dark text-white py-5">
+    <div class="container text-center">
+        <h1 class="display-4">Automate YouTube Comments</h1>
+        <p class="lead">Boost engagement by automating smart responses to comments using OpenAI.</p>
+        {% if user.is_authenticated %}
+            <a href="{% url 'google_oauth' %}" class="btn btn-danger btn-lg mt-3">Connect YouTube Channel</a>
+        {% else %}
+            <a href="{% url 'login' %}" class="btn btn-danger btn-lg mt-3">Login with Google</a>
+        {% endif %}
+    </div>
+</section>
+
+<!-- Features Section -->
+<section class="features py-5">
+    <div class="container">
+        <div class="row text-center">
+            <div class="col-md-4">
+                <i class="fas fa-robot fa-3x mb-3 text-danger"></i>
+                <h4>AI-Powered Replies</h4>
+                <p>Leverage OpenAI's GPT to craft intelligent, personalized responses to your YouTube comments.</p>
+            </div>
+            <div class="col-md-4">
+                <i class="fas fa-comment-dots fa-3x mb-3 text-danger"></i>
+                <h4>Engage with Your Audience</h4>
+                <p>Engage with your audience effectively by automating replies in your desired tone and style.</p>
+            </div>
+            <div class="col-md-4">
+                <i class="fas fa-cogs fa-3x mb-3 text-danger"></i>
+                <h4>Easy Integration</h4>
+                <p>Connect your YouTube channel and start automating replies seamlessly within minutes.</p>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Footer Section -->
+<footer class="bg-dark text-white text-center py-3">
+    <div class="container">
+        <p class="mb-0">Powered by OpenAI | Automate your YouTube comments intelligently.</p>
+    </div>
+</footer>
 {% endblock %}

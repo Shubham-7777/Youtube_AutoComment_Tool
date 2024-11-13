@@ -1,20 +1,46 @@
-<!-- comments/templates/comments/select_video.html -->
 {% extends 'comments/base.html' %}
 
 {% block content %}
-<h2>Select a YouTube Video</h2>
-<form method="post" action="{% url 'gather_insights' %}">
-    {% csrf_token %}
-    <div class="form-group">
-        {% for video in videos %}
-            <div class="form-check">
-                <input class="form-check-input" type="radio" name="video_id" id="video{{ forloop.counter }}" value="{{ video.id.videoId }}" required>
-                <label class="form-check-label" for="video{{ forloop.counter }}">
-                    {{ video.snippet.title }}
-                </label>
+<div class="container mt-5">
+    <h2 class="text-center mb-4">Select a YouTube Video</h2>
+    <form method="post" action="{% url 'gather_insights' %}">
+        {% csrf_token %}
+        <div class="row">
+            {% for video in videos %}
+            <div class="col-md-4 mb-4">
+                <div class="card shadow-sm">
+                    <!-- Display Video Thumbnail -->
+                    <img src="{{ video.snippet.thumbnails.high.url }}" class="card-img-top" alt="{{ video.snippet.title }} thumbnail">
+                    
+                    <div class="card-body">
+                        <!-- Video Title -->
+                        <h5 class="card-title">{{ video.snippet.title }}</h5>
+                        
+                        <!-- Additional Video Information -->
+                        <p class="card-text">
+                            {{ video.snippet.description|truncatewords:20 }}  <!-- Shortened description -->
+                        </p>
+                        
+                        <p class="text-muted">
+                            <small>Published on: {{ video.snippet.publishedAt|date:"F j, Y" }}</small><br>
+                            <small>Channel: {{ video.snippet.channelTitle }}</small>
+                        </p>
+
+                        <!-- Video Selection Button -->
+                        <div class="form-check">
+                            <input class="form-check-input" type="radio" name="video_id" id="video{{ forloop.counter }}" value="{{ video.id.videoId }}" required>
+                            <label class="form-check-label" for="video{{ forloop.counter }}">
+                                Select this video
+                            </label>
+                        </div>
+                    </div>
+                </div>
             </div>
-        {% endfor %}
-    </div>
-    <button type="submit" class="btn btn-success">Next</button>
-</form>
+            {% endfor %}
+        </div>
+        <div class="text-center">
+            <button type="submit" class="btn btn-success mt-4">Next</button>
+        </div>
+    </form>
+</div>
 {% endblock %}

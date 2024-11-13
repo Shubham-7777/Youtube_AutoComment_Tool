@@ -15,7 +15,9 @@ from googleapiclient.discovery import build
 from .utils import credentials_to_dict
 from django.urls import reverse
 from django.views.decorators.csrf import csrf_exempt
-
+import time
+import random
+from .models import Comment
 # Home view
 def home(request):
     return render(request, 'comments/home.html')
@@ -158,7 +160,7 @@ def gather_insights(request):
 def analyze_sentiment(comment_text):
     openai.api_key = os.getenv('OPENAI_API_KEY')
 
-    prompt = f"Determine the type/sentiment/tone/mood of this YouTube comment: \"{comment_text}\". Respond with 'positive', 'neutral', or 'negative'."
+    prompt = f"Determine the type/sentiment/tone/mood of this YouTube comment: \"{comment_text}\". Respond with 'positive', 'neutral', or 'negative'. NOTE - IF not sure or unsure, respond with 'neutral' Its compulsory to have answer only out of this three."
     
     try:
         sentiment_response = openai.ChatCompletion.create(
@@ -170,11 +172,132 @@ def analyze_sentiment(comment_text):
             max_tokens=10
         )
         sentiment = sentiment_response.choices[0].message['content'].strip().lower()
+        #breakpoint()
+        if sentiment not in ['positive', 'neutral', 'negative']:
+            sentiment = 'neutral'
         return sentiment
     except Exception as e:
         print(f"Error during sentiment analysis: {e}")
         return 'neutral'  # Default to neutral if analysis fails
 
+
+def process_comments(request):
+    if request.method == 'POST':
+        insights = request.POST.get('insights')
+        video_id = request.session.get('selected_video_id')
+        credentials_dict = request.session.get('credentials')
+
+        if not video_id or not credentials_dict:
+            return redirect('home')
+
+        credentials = Credentials(**credentials_dict)
+        youtube = build('youtube', 'v3', credentials=credentials)
+
+        video_response = youtube.videos().list(
+            id=video_id,
+            part='snippet,statistics'
+        ).execute()
+        video_details = video_response.get('items', [])
+        if video_details:
+            video_title = video_details[0]['snippet']['title']
+            print(f"Processing comments for video: {video_title}")
+
+        # Fetch comments from YouTube
+        response = youtube.commentThreads().list(
+            videoId=video_id,
+            part='snippet',
+            maxResults=100,
+            textFormat='plainText'
+        ).execute()
+
+        comments = response.get('items', [])
+
+        # Iterate through comments and analyze sentiment
+        for comment in comments:
+            top_comment = comment['snippet']['topLevelComment']
+            comment_id = top_comment['id']
+            comment_text = top_comment['snippet']['textOriginal']
+
+            # Check if we've already replied to this comment
+            existing_comment = Comment.objects.filter(video_id=video_id, comment_text=comment_text).first()
+
+            # Skip if we've already replied to this comment
+            if existing_comment and existing_comment.reply_text:
+                print(f"Already replied to comment: {comment_text}")
+                continue
+
+            # Analyze sentiment of the comment (positive, neutral, negative)
+            sentiment = analyze_sentiment(comment_text)
+
+            # Save the comment with its sentiment in the database if it's not already saved
+            if not existing_comment:
+                comment_record = Comment.objects.create(
+                    video_id=video_id,
+                    comment_text=comment_text,
+                    sentiment=sentiment
+                )
+            else:
+                comment_record = existing_comment
+
+            # Only reply to positive or neutral comments
+            if sentiment in ['positive', 'neutral']:
+
+                # Generate unique reply using OpenAI
+                openai.api_key = os.getenv('OPENAI_API_KEY')
+                prompt = f"Respond to this YouTube comment in a {insights} tone:\n\nComment: {comment_text}\nReply:"
+
+                try:
+                    openai_response = openai.ChatCompletion.create(
+                        model="gpt-3.5-turbo",
+                        messages=[
+                            {"role": "system", "content": "You are a helpful assistant."},
+                            {"role": "user", "content": prompt}
+                        ],
+                        max_tokens=60,
+                        temperature=0.7,
+                        n=3  # Generate 3 variations to choose a unique one
+                    )
+                    reply_texts = [choice.message['content'].strip() for choice in openai_response.choices]
+
+                    # Ensure uniqueness by picking a reply not already used for this video
+                    unique_reply = None
+                    for reply in reply_texts:
+                        if not Comment.objects.filter(video_id=video_id, reply_text=reply).exists():
+                            unique_reply = reply
+                            break
+
+                    if unique_reply:
+                        # Save reply to the comment record
+                        comment_record.reply_text = unique_reply
+                        comment_record.save()
+
+                        # Post the reply to YouTube
+                        youtube.comments().insert(
+                            part='snippet',
+                            body={
+                                'snippet': {
+                                    'parentId': comment_id,
+                                    'textOriginal': unique_reply
+                                }
+                            }
+                        ).execute()
+                        print(f"Replied to comment: {comment_text}")
+                        #breakpoint()
+                except Exception as e:
+                    print(f"Error replying to comment {comment_id}: {e}")
+                    continue  # Skip to the next comment in case of error
+
+                # Randomize delay between replies (between 5 and 15 seconds)
+                delay = random.randint(0, 120)
+                print(f"Waiting for {delay} seconds before replying to the next comment...")
+                time.sleep(delay)
+
+        return redirect('success')
+
+    return redirect('gather_insights')
+
+
+"""
 # Process Comments and Generate Replies
 def process_comments(request):
     if request.method == 'POST':
@@ -252,7 +375,7 @@ def process_comments(request):
 
     return redirect('gather_insights')
 
-# Success Page
+"""# Success Page
 def success(request):
     return render(request, 'comments/success.html')
 

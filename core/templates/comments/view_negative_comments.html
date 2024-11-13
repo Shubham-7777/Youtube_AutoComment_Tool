@@ -1,19 +1,45 @@
-<!-- comments/templates/comments/view_negative_comments.html -->
 {% extends 'comments/base.html' %}
 
 {% block content %}
-<h2>Negative Comments</h2>
+<div class="container mt-5">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <!-- Header -->
+            <div class="text-center mb-4">
+                <h2 class="display-4">Negative Comments</h2>
+                <p class="lead">Review the following negative comments and respond manually.</p>
+            </div>
 
-{% if negative_comments %}
-    <ul>
-        {% for comment in negative_comments %}
-            <li>{{ comment }}</li>
-        {% endfor %}
-    </ul>
-    <p>Please review and reply manually to these comments.</p>
-{% else %}
-    <p>No negative comments found.</p>
-{% endif %}
+            <!-- Negative Comments List -->
+            <div class="card shadow-sm">
+                <div class="card-body">
+                    {% if negative_comments %}
+                        <ul class="list-group list-group-flush">
+                            {% for comment in negative_comments %}
+                                <li class="list-group-item">
+                                    <i class="fas fa-exclamation-triangle text-danger"></i>
+                                    <strong>Comment:</strong> {{ comment }}
+                                </li>
+                            {% endfor %}
+                        </ul>
+                        <div class="alert alert-warning mt-3" role="alert">
+                            <i class="fas fa-info-circle"></i> Please review and reply manually to these comments.
+                        </div>
+                    {% else %}
+                        <div class="alert alert-success text-center" role="alert">
+                            <i class="fas fa-check-circle"></i> No negative comments found.
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
 
-<a href="{% url 'gather_insights' %}">Back to Insights</a>
+            <!-- Back Button -->
+            <div class="text-center mt-4">
+                <a href="{% url 'gather_insights' %}" class="btn btn-primary btn-lg">
+                    <i class="fas fa-arrow-left"></i> Back to Insights
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
 {% endblock %}
